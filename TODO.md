@@ -1,0 +1,3 @@
+- Sort out Docker stuff to run everything in separate containers
+- Finish API
+- Finish frontend
