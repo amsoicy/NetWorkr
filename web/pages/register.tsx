@@ -55,6 +55,31 @@ export default function Register() {
          if (data.success) {
             // Store the token
             localStorage.setItem("token", data.token)
+
+            // Check if user is banned
+            const userResponse = await fetch("http://localhost:3001/user/isAdmin", {
+               headers: {
+                  Authorization: `Bearer ${data.token}`
+               }
+            })
+            const userData = await userResponse.json()
+
+            if (!userData.success) {
+               if (userData.error === "Account is banned") {
+                  localStorage.removeItem("token")
+                  router.push("/banned")
+                  return
+               }
+               setError(userData.error || "Registration failed")
+               return
+            }
+
+            if (userData.user && userData.user.banned === true) {
+               localStorage.removeItem("token")
+               router.push("/banned")
+               return
+            }
+
             // Redirect to home page
             router.push("/")
          } else {

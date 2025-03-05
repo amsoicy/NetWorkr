@@ -4,6 +4,8 @@
 - graphs have same as above
 - create a default example graph for new users
 
+REDO THE ENTIRE CODEBASE !! CURSOR CODE MESSY
+
 # Frontend:
 - [ ] Login page
 > - [ ] Add option to remember user
@@ -23,6 +25,7 @@
 > - [ ] View and manage all users (ban, delete, assign invite)
 > - [ ] View and manage all invites (create, give, delete)
 > - [ ] View stats (total graphs, total users, etc)
+> - [ ] In the users page, make it so users are fetched in batches rather than all to prevent lag on a massive scale
 
 ## Backend API:
 - [ ] Implement JWT authentication on required routes
@@ -30,16 +33,20 @@
 - [ ] Complete user route
 > - [x] Login
 > - [x] Register
-> - [ ] Fetch user data
+> - [x] Fetch user data
 > - [ ] Update user
 > - [ ] Delete user
-> - [ ] Fetch user invites
+> - [x] Fetch user invites
 - [ ] Complete invites route
 > - [x] Generate invite
-> - [ ] Delete invite
+> - [x] Delete invite
+> - [ ] Fetch invites for specific user id
 - [ ] Complete entity route
 - [ ] Ensure database structure makes sense
 > - [ ] Get off of Drizle ORM and just use raw SQL
+- [ ] Bans
+> - [ ] Add ban reason and expiration
+> - [ ] Make separate modal for banning rather than having it in the overview modal
 
 ## Docker:
 - Implement docker-compose for all 3 sections of the app: frontend, backend, and database

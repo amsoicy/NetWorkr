@@ -1,7 +1,7 @@
 import mysql from "mysql2/promise"
 import keys from "./keys"
 import { drizzle } from "drizzle-orm/mysql2"
-import { mysqlTable, varchar, primaryKey, text, int, datetime } from "drizzle-orm/mysql-core"
+import { mysqlTable, varchar, primaryKey, text, int, datetime, boolean } from "drizzle-orm/mysql-core"
 import { sql } from "drizzle-orm"
 
 export async function connection() {
@@ -20,13 +20,20 @@ export const users = mysqlTable("users", {
    username: varchar("username", { length: 255 }).notNull().unique(),
    password: varchar("password", { length: 255 }).notNull(),
    invitedBy: varchar("invitedBy", { length: 36 }), // FIX: ts
-   permissions: int("permissions").notNull().default(0)
+   permissions: int("permissions").notNull().default(0),
+   createdAt: datetime("createdAt")
+      .notNull()
+      .default(sql`now()`),
+   banned: boolean("banned").notNull().default(false)
 })
 
 export const invites = mysqlTable("invites", {
    id: int("id").primaryKey().autoincrement(),
    code: varchar("code", { length: 36 }).notNull().unique(),
-   createdBy: varchar("createdBy", { length: 36 }).references(() => users.id)
+   createdBy: varchar("createdBy", { length: 36 }).references(() => users.id),
+   createdAt: datetime("createdAt")
+      .notNull()
+      .default(sql`now()`)
 })
 
 export const graphs = mysqlTable("graphs", {

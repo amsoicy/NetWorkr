@@ -2,6 +2,8 @@ import JWT, { JwtPayload, VerifyErrors } from "jsonwebtoken"
 import keys from "./keys"
 import { CorsOptions } from "cors"
 import { Request, Response, NextFunction } from "express"
+import { connection, users } from "./database"
+import { eq } from "drizzle-orm"
 
 // Extend Express Request type to include user
 declare global {
@@ -25,32 +27,57 @@ export interface AuthToken {
    permissions: number
 }
 
-export function authenticateToken(req: Request, res: Response, next: NextFunction) {
-   const authHeader = req.headers["authorization"]
-   const token = authHeader && authHeader.split(" ")[1]
+export const HTTPCodes = {
+   SUCCESS: 200,
+   BAD_REQUEST: 400,
+   UNAUTHORIZED: 401,
+   FORBIDDEN: 403,
+   NOT_FOUND: 404,
+   SERVER_ERROR: 500
+}
 
-   if (token == null) {
-      res.status(HTTPCodes.BAD_REQUEST).json({
-         success: false,
-         error: "Missing request parameters (authorization)"
-      })
-      return
-   }
-
-   JWT.verify(token, keys.JWT_SECRET, (err: VerifyErrors | null, decoded: string | JwtPayload | undefined) => {
-      if (err) {
-         console.log("jwt err:", err)
-         res.status(HTTPCodes.FORBIDDEN).json({
+export const authenticateToken = async (req: Request, res: Response, next: NextFunction) => {
+   try {
+      const token = req.headers.authorization?.split(" ")[1]
+      if (!token) {
+         res.status(HTTPCodes.UNAUTHORIZED).json({
             success: false,
-            error: "User logon expired"
+            error: "No token provided"
          })
          return
       }
 
-      // TODO: should probably do a db check to make sure user still exists n stuff
-      req.user = decoded as AuthToken
+      const decoded = JWT.verify(token, process.env.JWT_SECRET!) as AuthToken
+      const db = await connection()
+
+      // Check if user exists and is not banned
+      const user = await db.select().from(users).where(eq(users.id, decoded.id))
+      if (user.length === 0) {
+         res.status(HTTPCodes.UNAUTHORIZED).json({
+            success: false,
+            error: "User not found"
+         })
+         return
+      }
+
+      // Check if user is banned
+      if (user[0].banned) {
+         res.status(HTTPCodes.FORBIDDEN).json({
+            success: false,
+            error: "Account is banned"
+         })
+         return
+      }
+
+      // Set user data without banned status
+      req.user = decoded
       next()
-   })
+   } catch (error) {
+      res.status(HTTPCodes.UNAUTHORIZED).json({
+         success: false,
+         error: "Invalid token"
+      })
+   }
 }
 
 export function requireAdmin(req: Request, res: Response, next: NextFunction) {
@@ -62,13 +89,4 @@ export function requireAdmin(req: Request, res: Response, next: NextFunction) {
       return
    }
    next()
-}
-
-export const HTTPCodes = {
-   ["SUCCESS"]: 200,
-   ["BAD_REQUEST"]: 400,
-   ["UNAUTHORIZED"]: 401,
-   ["FORBIDDEN"]: 403,
-   ["NOT_FOUND"]: 404,
-   ["SERVER_ERROR"]: 500
 }

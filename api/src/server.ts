@@ -6,12 +6,14 @@ import userRoute from "./routes/user"
 import entityRoute from "./routes/entity"
 import inviteRoute from "./routes/invite"
 
-declare module "express" {
-   export interface Request {
-      user: {
-         id: string
-         username: string
-         permissions: number
+declare global {
+   namespace Express {
+      interface Request {
+         user: {
+            id: string
+            username: string
+            permissions: number
+         }
       }
    }
 }
@@ -26,3 +28,4 @@ app.use("/entity", entityRoute)
 app.use("/invite", inviteRoute)
 
 app.listen(3001, () => console.log("API running on localhost:3001"))
+   

@@ -1,7 +1,7 @@
 version: "3.8"
 
 networks:
-   tracker:
+   networkr:
       driver: bridge
 
 services:
@@ -23,7 +23,7 @@ services:
       environment:
          MYSQL_ROOT_PASSWORD: YOUR_PASSWORD_HERE
       networks:
-         - tracker
+         - networkr
       ports:
          - "3306:3306"
    phpmyadmin:
@@ -37,4 +37,4 @@ services:
       depends_on:
          - mysql
       networks:
-         - tracker
+         - networkr

@@ -1,5 +1,5 @@
-CREATE DATABASE IF NOT EXISTS `identity_tracker`;
-USE `identity_tracker`;
+CREATE DATABASE IF NOT EXISTS `networkr`;
+USE `networkr`;
 
 CREATE TABLE IF NOT EXISTS `users`(
   `id` VARCHAR(36),
@@ -7,14 +7,18 @@ CREATE TABLE IF NOT EXISTS `users`(
   `password` VARCHAR(255) NOT NULL,
   `invitedBy` VARCHAR(36),
   `permissions` INT NOT NULL DEFAULT 0,
+  `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `banned` BOOLEAN NOT NULL DEFAULT FALSE,
 
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`invitedBy`) REFERENCES users(id)
 );
 
 CREATE TABLE IF NOT EXISTS `invites`(
   `id` INT AUTO_INCREMENT,
   `code` VARCHAR(36) NOT NULL UNIQUE,
   `createdBy` VARCHAR(36),
+  `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
   PRIMARY KEY (`id`),
   FOREIGN KEY (`createdBy`) REFERENCES users(id)
