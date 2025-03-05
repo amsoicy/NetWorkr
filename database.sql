@@ -42,3 +42,6 @@ CREATE TABLE IF NOT EXISTS `relationships`(
   FOREIGN KEY (`identity_one`) REFERENCES users(id),
   FOREIGN KEY (`identity_two`) REFERENCES users(id)
 );
+
+-- Create an invite for admin
+INSERT INTO `invites` (`code`) VALUES ("abc123");

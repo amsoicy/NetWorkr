@@ -175,4 +175,25 @@ router.patch("/:id", authenticateToken, async (req, res) => {})
 // delete user
 router.delete("/:id", authenticateToken, async (req, res) => {})
 
+// Check if user is admin
+router.get("/isAdmin", authenticateToken, async (req, res) => {
+   const userId = req.user.id
+
+   const db = await connection()
+   const user = await db.select().from(users).where(eq(users.id, userId))
+
+   if (user.length === 0) {
+      res.status(HC.BAD_REQUEST).json({
+         success: false,
+         error: "User not found"
+      })
+      return
+   }
+
+   res.status(HC.SUCCESS).json({
+      success: true,
+      isAdmin: user[0].permissions === 1
+   })
+})
+
 export default router

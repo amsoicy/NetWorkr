@@ -1,14 +1,18 @@
 import cors from "cors"
+import { CORS } from "./util"
 import express from "express"
 import bodyParser from "body-parser"
 import userRoute from "./routes/user"
 import entityRoute from "./routes/entity"
 import inviteRoute from "./routes/invite"
-import { CORS } from "./util"
 
 declare module "express" {
    export interface Request {
-      user: any
+      user: {
+         id: string
+         username: string
+         permissions: number
+      }
    }
 }
 

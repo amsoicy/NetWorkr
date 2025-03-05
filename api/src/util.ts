@@ -1,7 +1,16 @@
-import JWT from "jsonwebtoken"
+import JWT, { JwtPayload, VerifyErrors } from "jsonwebtoken"
 import keys from "./keys"
-import { NextFunction, Request, Response } from "express"
 import { CorsOptions } from "cors"
+import { Request, Response, NextFunction } from "express"
+
+// Extend Express Request type to include user
+declare global {
+   namespace Express {
+      interface Request {
+         user: AuthToken
+      }
+   }
+}
 
 export const CORS: CorsOptions = {
    origin: "http://localhost:3000", // Frontend URL
@@ -16,8 +25,7 @@ export interface AuthToken {
    permissions: number
 }
 
-// FIX: express functions error when req is set to Express.Request (wrong type mayb?)
-export function authenticateToken(req: any, res: any, next: any) {
+export function authenticateToken(req: Request, res: Response, next: NextFunction) {
    const authHeader = req.headers["authorization"]
    const token = authHeader && authHeader.split(" ")[1]
 
@@ -29,7 +37,7 @@ export function authenticateToken(req: any, res: any, next: any) {
       return
    }
 
-   JWT.verify(token, keys.JWT_SECRET, (err: any, user: any) => {
+   JWT.verify(token, keys.JWT_SECRET, (err: VerifyErrors | null, decoded: string | JwtPayload | undefined) => {
       if (err) {
          console.log("jwt err:", err)
          res.status(HTTPCodes.FORBIDDEN).json({
@@ -40,9 +48,20 @@ export function authenticateToken(req: any, res: any, next: any) {
       }
 
       // TODO: should probably do a db check to make sure user still exists n stuff
-      req.user = user
+      req.user = decoded as AuthToken
       next()
    })
+}
+
+export function requireAdmin(req: Request, res: Response, next: NextFunction) {
+   if (!req.user || req.user.permissions !== 1) {
+      res.status(HTTPCodes.FORBIDDEN).json({
+         success: false,
+         error: "Admin access required"
+      })
+      return
+   }
+   next()
 }
 
 export const HTTPCodes = {

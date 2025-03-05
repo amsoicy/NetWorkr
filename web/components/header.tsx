@@ -2,26 +2,47 @@ import Link from "next/link"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/router"
 
+interface DecodedToken {
+   id: string
+   username: string
+   permissions: number
+}
+
+interface User {
+   id: string
+   username: string
+   isAdmin: boolean
+}
+
 export default function Header() {
    const router = useRouter()
-   const [username, setUsername] = useState<string | null>(null)
+   const [user, setUser] = useState<User | null>(null)
 
    useEffect(() => {
       // Check if user is logged in
       const token = localStorage.getItem("token")
-      if (token) {
-         try {
-            const decoded = JSON.parse(atob(token.split(".")[1]))
-            setUsername(decoded.username)
-         } catch (err) {
-            console.error("Error decoding token:", err)
-         }
+      if (!token) {
+         setUser(null)
+         return
+      }
+
+      try {
+         const decoded = JSON.parse(atob(token.split(".")[1])) as DecodedToken
+         setUser({
+            id: decoded.id,
+            username: decoded.username,
+            isAdmin: decoded.permissions === 1
+         })
+      } catch (err) {
+         console.error("Error decoding token:", err)
+         localStorage.removeItem("token")
+         setUser(null)
       }
    }, [])
 
    const handleLogout = () => {
       localStorage.removeItem("token")
-      setUsername(null)
+      setUser(null)
       router.push("/login")
    }
 
@@ -31,9 +52,9 @@ export default function Header() {
             <Link href="/" className="text-xl">
                idTracker
             </Link>
-            {username && <span className="text-base-content/70">@{username}</span>}
+            {user?.username && <span className="text-base-content/70">@{user.username}</span>}
          </div>
-         <div className="flex-none">
+         <div className="flex-none gap-2">
             <div className="dropdown dropdown-end">
                <button tabIndex={0} className="btn btn-square btn-ghost">
                   <svg
@@ -51,12 +72,21 @@ export default function Header() {
                   </svg>
                </button>
                <ul tabIndex={0} className="dropdown-content menu p-2 shadow-lg bg-base-200 rounded-box w-52">
-                  {username ? (
-                     <li>
-                        <button onClick={handleLogout} className="text-error">
-                           Logout
-                        </button>
-                     </li>
+                  {user ? (
+                     <>
+                        {user.isAdmin && (
+                           <li>
+                              <Link href="/admin" className="text-primary">
+                                 Admin Dashboard
+                              </Link>
+                           </li>
+                        )}
+                        <li>
+                           <button onClick={handleLogout} className="text-error">
+                              Logout
+                           </button>
+                        </li>
+                     </>
                   ) : (
                      <li>
                         <button onClick={() => router.push("/login")} className="text-primary">
