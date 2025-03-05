@@ -1,0 +1,40 @@
+version: "3.8"
+
+networks:
+   tracker:
+      driver: bridge
+
+services:
+   # web:
+   #   build:
+   #     context: ./web
+   #     target: runner
+   #   volumes:
+   #     - .:/web
+   #   command: npm run dev
+   #   ports:
+   #     - "3000:3000"
+   #   environment:
+   #     NODE_ENV: development
+
+   mysql:
+      image: mysql:latest
+      container_name: i-mysql-container
+      environment:
+         MYSQL_ROOT_PASSWORD: oYx(ztRc6j9Qvi)%
+      networks:
+         - tracker
+      ports:
+         - "3306:3306"
+   phpmyadmin:
+      image: phpmyadmin:latest
+      container_name: i-phpmyadmin-container
+      ports:
+         - "8080:80"
+      environment:
+         PMA_HOST: i-mysql-container
+         PMA_PORT: 3306
+      depends_on:
+         - mysql
+      networks:
+         - tracker
