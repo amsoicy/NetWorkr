@@ -15,3 +15,7 @@ api/node_modules
 
 .env
 data.sql
+docker-compose.yml
+.prettierrc
+test.ts
+test.erd

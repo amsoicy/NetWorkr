@@ -2,3 +2,7 @@
 <p align="center">A web app that allows you to store entities and information about them, and visualise connections in a network graph format</p>
 
 <hr />
+
+## About
+
+## Installation and setup
